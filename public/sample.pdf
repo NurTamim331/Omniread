@@ -1,0 +1,70 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 1439 >>
+stream
+BT
+/F1 22 Tf
+50 720 Td
+(Minimal PDF Reader & Study Companion) Tj
+/F1 13 Tf
+0 -40 Td
+(Welcome to your integrated PDF study environment!) Tj
+0 -24 Td
+(This sample document demonstrates the integrated split-screen capabilities:) Tj
+0 -20 Td
+(1. Left 70%: High-fidelity PDF viewer with text-selection and fullscreen support.) Tj
+0 -20 Td
+(2. Right 30% Top: Instant English-to-any-language Google Translator.) Tj
+0 -20 Td
+(3. Right 30% Bottom: Interactive Google Gemini AI tutor for deep comprehension.) Tj
+/F1 15 Tf
+0 -40 Td
+(Sample Passage for Testing Language Translation & AI:) Tj
+/F1 12 Tf
+0 -28 Td
+(Serendipity is the occurrence and development of events by chance in a happy) Tj
+0 -18 Td
+(or beneficial way. In scientific discovery, serendipitous events often trigger) Tj
+0 -18 Td
+(groundbreaking innovations that were never initially anticipated.) Tj
+0 -28 Td
+(Epistemology is the philosophical study of the nature, origin, and limits of) Tj
+0 -18 Td
+(human knowledge. It investigates what distinguishes justified belief from opinion.) Tj
+0 -28 Td
+(Quantum entanglement is a physical phenomenon that occurs when a group of particles) Tj
+0 -18 Td
+(interact in ways such that the quantum state of each particle of the pair cannot) Tj
+0 -18 Td
+(be described independently of the state of the others, regardless of distance.) Tj
+/F1 11 Tf
+0 -40 Td
+([Try this]: Highlight any sentence or word above. Click "Translate" or "Ask Gemini"!) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000001732 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1802
+%%EOF

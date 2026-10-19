@@ -1,0 +1,230 @@
+const SYSTEM_INSTRUCTION = `You are an expert reading assistant and scholarly study tutor embedded inside a minimal PDF reader.
+Your purpose is to help the reader comprehend documents deeply, clarify difficult sentences, explain foreign idioms or technical jargon, provide context, and summarize passages.
+
+Guidelines:
+1. When a document is loaded, you have FULL ACCESS to its text. Synthesize its content, reference specific pages, and clarify any questions regarding the document.
+2. Use Google Search grounding when needed to provide extra context, real-world examples, definitions, or recent historical/scientific developments.
+3. When referencing external web sources found via search, cite them naturally.
+4. Structure your answers cleanly with Markdown (bullet points, bold key terms, short paragraphs).
+5. Be encouraging, concise, and intellectually precise.`;
+
+export default async function handler(req: Request) {
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  try {
+    const openrouterKey = process.env.OPENROUTER_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (!openrouterKey && !apiKey) {
+      return new Response(
+        JSON.stringify({
+          error:
+            'Server setup required: Please configure OPENROUTER_API_KEY (or GEMINI_API_KEY) in your Netlify site environment variables.',
+        }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Parse request body
+    const {
+      messages = [],
+      prompt = '',
+      quotedText,
+      documentContext,
+      documentName,
+    } = await req.json();
+
+    if (!prompt && !quotedText) {
+      return new Response(
+        JSON.stringify({ error: 'No prompt or quoted text provided.' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Build system instruction including document context
+    let dynamicSystemInstruction = SYSTEM_INSTRUCTION;
+    if (documentContext) {
+      dynamicSystemInstruction += `\n\n=== UPLOADED DOCUMENT CONTENT ("${
+        documentName || 'Document'
+      }") ===\n${documentContext.slice(0, 48000)}\n=== END OF UPLOADED DOCUMENT CONTENT ===\nYou have full access to this document. When answering questions, reference this document directly.`;
+    }
+
+    // If OpenRouter key is present, route to OpenRouter free models
+    if (openrouterKey) {
+      const openRouterMessages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
+        { role: 'system', content: dynamicSystemInstruction },
+      ];
+
+      for (const msg of messages) {
+        if (msg.sender === 'system' || msg.isError) continue;
+        const role = msg.sender === 'user' ? 'user' : 'assistant';
+        let text = msg.text;
+        if (msg.quotedText && msg.sender === 'user') {
+          text = `[Referenced Text from PDF]:\n"${msg.quotedText}"\n\nQuestion/Instruction:\n${msg.text}`;
+        }
+        openRouterMessages.push({ role, content: text });
+      }
+
+      let currentTurnText = prompt;
+      if (quotedText) {
+        currentTurnText = `[Referenced Text from PDF]:\n"${quotedText}"\n\n${
+          prompt || 'Please explain this passage and its key vocabulary.'
+        }`;
+      }
+      openRouterMessages.push({ role: 'user', content: currentTurnText });
+
+      const openrouterRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${openrouterKey}`,
+          'HTTP-Referer': 'https://minimal-pdf-reader.netlify.app',
+          'X-Title': 'Minimal PDF Reader AI Tutor',
+        },
+        body: JSON.stringify({
+          model: 'openrouter/free',
+          models: [
+            'openrouter/free',
+            'meta-llama/llama-3.3-70b-instruct:free',
+            'meta-llama/llama-3.1-8b-instruct:free',
+          ],
+          messages: openRouterMessages,
+          temperature: 0.7,
+          max_tokens: 2048,
+        }),
+      });
+
+      if (!openrouterRes.ok) {
+        const errorData = await openrouterRes.json().catch(() => ({}));
+        return new Response(
+          JSON.stringify({
+            error:
+              errorData?.error?.message ||
+              `OpenRouter API error ${openrouterRes.status}`,
+          }),
+          { status: openrouterRes.status, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const data = await openrouterRes.json();
+      const text = data.choices?.[0]?.message?.content;
+      return new Response(
+        JSON.stringify({
+          text: text || 'No response generated.',
+          model: data.model || 'OpenRouter Free',
+          groundingSources: [],
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Fallback to Gemini API if only Gemini key is available
+    const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = [];
+
+    for (const msg of messages) {
+      if (msg.sender === 'system' || msg.isError) continue;
+      const role = msg.sender === 'user' ? 'user' : 'model';
+      let text = msg.text;
+      if (msg.quotedText && msg.sender === 'user') {
+        text = `[Referenced Text from PDF]:\n"${msg.quotedText}"\n\nQuestion/Instruction:\n${msg.text}`;
+      }
+      contents.push({ role, parts: [{ text }] });
+    }
+
+    let currentTurnText = prompt;
+    if (quotedText) {
+      currentTurnText = `[Referenced Text from PDF]:\n"${quotedText}"\n\n${
+        prompt || 'Please explain this passage and its key vocabulary.'
+      }`;
+    }
+    contents.push({ role: 'user', parts: [{ text: currentTurnText }] });
+
+    const model = 'gemini-3.8-flash';
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+    const geminiRes = await fetch(geminiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systemInstruction: {
+          parts: [{ text: dynamicSystemInstruction }],
+        },
+        contents,
+        tools: [
+          {
+            google_search: {},
+          },
+        ],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 2048,
+        },
+      }),
+    });
+
+    if (!geminiRes.ok) {
+      const errorData = await geminiRes.json().catch(() => ({}));
+      const message =
+        errorData?.error?.message ||
+        `Gemini API request failed with status ${geminiRes.status}.`;
+      return new Response(JSON.stringify({ error: message }), {
+        status: geminiRes.status,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    const data = await geminiRes.json();
+    const candidate = data.candidates?.[0];
+    const text = candidate?.content?.parts?.[0]?.text;
+
+    const groundingChunks =
+      candidate?.groundingMetadata?.groundingChunks || [];
+    const groundingSources: Array<{ title?: string; url?: string }> = [];
+
+    for (const chunk of groundingChunks) {
+      if (chunk.web?.uri) {
+        groundingSources.push({
+          title: chunk.web.title || chunk.web.uri,
+          url: chunk.web.uri,
+        });
+      }
+    }
+
+    if (!text) {
+      return new Response(
+        JSON.stringify({ error: 'No response generated.' }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({
+        text,
+        groundingSources: groundingSources.slice(0, 5),
+      }),
+      {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  } catch (err: unknown) {
+    return new Response(
+      JSON.stringify({
+        error:
+          err instanceof Error
+            ? err.message
+            : 'Internal server error processing request.',
+      }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+}
+
+export const config = {
+  path: '/api/chat',
+};

@@ -1,0 +1,113 @@
+@import "tailwindcss";
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  
+  html, body, #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.4);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.7);
+}
+
+/* Exact PDF.js textLayer selection containment */
+.pdfViewer {
+  --scale-factor: 1;
+}
+
+.page {
+  position: relative;
+  background-color: #ffffff;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  margin-left: auto;
+  margin-right: auto;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  --user-unit: 1;
+  --scale-round-x: 1px;
+  --scale-round-y: 1px;
+}
+
+.textLayer {
+  position: absolute;
+  text-align: initial;
+  inset: 0;
+  overflow: clip;
+  opacity: 1;
+  line-height: 1;
+  letter-spacing: normal;
+  word-spacing: normal;
+  transform-origin: 0 0;
+  z-index: 2;
+  pointer-events: auto;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+.textLayer :is(span, br) {
+  color: transparent !important;
+  position: absolute;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0% 0%;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+.textLayer span::selection {
+  background: rgba(59, 130, 246, 0.35) !important;
+  color: transparent !important;
+}
+
+.textLayer br::selection {
+  background: transparent !important;
+}
+
+.textLayer .endOfContent {
+  display: block;
+  position: absolute;
+  inset: 100% 0 0;
+  z-index: 0;
+  cursor: default;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  pointer-events: none;
+}
+
+.textLayer.selecting .endOfContent {
+  top: 0;
+}
+
+/* Dark mode canvas filter */
+.pdf-dark-mode canvas {
+  filter: invert(0.9) hue-rotate(180deg) contrast(1.1);
+}
+
+.pdf-sepia-mode canvas {
+  filter: sepia(0.35) contrast(0.95);
+}
