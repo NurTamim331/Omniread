@@ -172,20 +172,14 @@ export const SplitPaneLayout: React.FC<SplitPaneLayoutProps> = ({
   }
 
   return (
-    <div className="relative flex-1 w-full h-[calc(100dvh-3rem)] overflow-hidden select-none">
+    <div className="relative flex-1 w-full h-[calc(100dvh-3rem)] overflow-hidden">
       {/* ----------------- MOBILE VIEW (< 768px) ----------------- */}
       <div className="flex md:hidden flex-col w-full h-full">
-        {/* Active Panel Content */}
+        {/* Active Panel Content — all three panels stay mounted; CSS hides inactive ones */}
         <div className="flex-1 w-full h-[calc(100dvh-3rem-3.5rem)] overflow-hidden">
-          {mobileTab === 'document' && (
-            <div className="w-full h-full flex flex-col">{pdfComponent}</div>
-          )}
-          {mobileTab === 'translate' && (
-            <div className="w-full h-full flex flex-col">{translatorComponent}</div>
-          )}
-          {mobileTab === 'gemini' && (
-            <div className="w-full h-full flex flex-col">{geminiComponent}</div>
-          )}
+          <div className={`w-full h-full flex flex-col ${mobileTab === 'document' ? '' : 'hidden'}`}>{pdfComponent}</div>
+          <div className={`w-full h-full flex flex-col ${mobileTab === 'translate' ? '' : 'hidden'}`}>{translatorComponent}</div>
+          <div className={`w-full h-full flex flex-col ${mobileTab === 'gemini' ? '' : 'hidden'}`}>{geminiComponent}</div>
         </div>
 
         {/* Bottom Tab Navigation Bar */}
