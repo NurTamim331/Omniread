@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import type { FullscreenTarget, ReaderTheme, GoogleUserProfile } from './types';
+import type { FullscreenTarget, ReaderTheme, GoogleUserProfile, MobileTab } from './types';
 import { getStoredProfile } from './services/auth';
 import { Navbar } from './components/Navbar';
 import { PDFViewer } from './components/PDFViewer/PDFViewer';
@@ -14,9 +14,10 @@ export const App: React.FC = () => {
   const [fullscreenTarget, setFullscreenTarget] = useState<FullscreenTarget>('none');
   const [leftRatio, setLeftRatio] = useState<number>(70); // 70:30 default
   const [theme, setTheme] = useState<ReaderTheme>('light');
+  const [mobileTab, setMobileTab] = useState<MobileTab>('document');
 
   // Document state for Gemini deep comprehension
-  const [documentName, setDocumentName] = useState<string>('Sample Document.pdf');
+  const [documentName, setDocumentName] = useState<string>('Don Quixote.pdf');
   const [documentContext, setDocumentContext] = useState<string>('');
 
   // Inter-component communication
@@ -44,6 +45,7 @@ export const App: React.FC = () => {
   // Actions from PDF selection
   const handleSendToTranslate = (text: string) => {
     setTranslatorText(text);
+    setMobileTab('translate');
   };
 
   const handleSendToGemini = (text: string, explanationPrompt?: string) => {
@@ -53,6 +55,7 @@ export const App: React.FC = () => {
         'Please explain this sentence and break down any difficult concepts:',
       quotedText: text,
     });
+    setMobileTab('gemini');
   };
 
   const handleDocumentLoaded = useCallback((name: string, fullText: string) => {
@@ -76,10 +79,11 @@ export const App: React.FC = () => {
   const handleResetLayout = () => {
     setLeftRatio(70);
     setFullscreenTarget('none');
+    setMobileTab('document');
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-hidden">
+    <div className="flex flex-col h-[100dvh] w-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-hidden">
       {/* Top Navigation */}
       <Navbar
         userProfile={userProfile}
@@ -89,12 +93,14 @@ export const App: React.FC = () => {
         setTheme={setTheme}
       />
 
-      {/* Main 70:30 Split Workspace */}
+      {/* Main Split & Responsive Workspace */}
       <SplitPaneLayout
         leftRatio={leftRatio}
         setLeftRatio={setLeftRatio}
         fullscreenTarget={fullscreenTarget}
         onExitFullscreen={() => setFullscreenTarget('none')}
+        mobileTab={mobileTab}
+        setMobileTab={setMobileTab}
         pdfComponent={
           <PDFViewer
             isFullscreen={fullscreenTarget === 'pdf'}

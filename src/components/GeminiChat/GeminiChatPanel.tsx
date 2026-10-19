@@ -179,11 +179,11 @@ export const GeminiChatPanel: React.FC<GeminiChatPanelProps> = ({
   return (
     <div
       className={`flex flex-col h-full bg-slate-50/60 dark:bg-slate-900 transition-all ${
-        isFullscreen ? 'fixed inset-0 z-50 p-6' : 'p-3.5'
+        isFullscreen ? 'fixed inset-0 z-50 p-6' : 'p-2.5 sm:p-3.5'
       }`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between pb-2.5 mb-2 border-b border-slate-200 dark:border-slate-800 shrink-0">
+      <div className="flex items-center justify-between gap-1 pb-2 mb-2 border-b border-slate-200 dark:border-slate-800 shrink-0">
         <div className="flex items-center gap-2 min-w-0">
           <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 text-white flex items-center justify-center shadow-xs shrink-0">
             <Sparkles className="w-4 h-4" />
@@ -195,7 +195,7 @@ export const GeminiChatPanel: React.FC<GeminiChatPanelProps> = ({
               </h2>
               <span
                 title={`Active LLM: ${activeModel}`}
-                className="text-[10px] font-normal px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 shrink-0 border border-emerald-200 dark:border-emerald-800"
+                className="hidden sm:inline-block text-[10px] font-normal px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 shrink-0 border border-emerald-200 dark:border-emerald-800"
               >
                 {activeModel.replace(/^.*\//, '')} (Free)
               </span>
@@ -220,7 +220,7 @@ export const GeminiChatPanel: React.FC<GeminiChatPanelProps> = ({
                 >
                   <FileText className="w-3 h-3 shrink-0" />
                   <span>
-                    {includeDocContext ? 'Doc Context: ON' : '⚡ Doc Context: OFF (Token Saver)'}
+                    {includeDocContext ? 'Doc Context: ON' : '⚡ Token Saver'}
                   </span>
                 </button>
               </div>

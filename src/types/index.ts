@@ -2,6 +2,8 @@ export type FullscreenTarget = 'none' | 'pdf' | 'translate' | 'gemini';
 
 export type ReaderTheme = 'light' | 'dark' | 'sepia';
 
+export type MobileTab = 'document' | 'translate' | 'gemini';
+
 export interface Language {
   code: string;
   name: string;
