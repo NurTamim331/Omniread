@@ -59,7 +59,7 @@ export default defineConfig(({ mode }) => {
                     documentName || 'Document'
                   }") ===\n${documentContext.slice(
                     0,
-                    48000
+                    16000
                   )}\n=== END OF UPLOADED DOCUMENT ===\nYou have full access to this document. When answering questions, reference this document directly.`;
                 }
 
@@ -96,15 +96,15 @@ export default defineConfig(({ mode }) => {
                       'X-Title': 'Minimal PDF Reader AI Tutor',
                     },
                     body: JSON.stringify({
-                      model: 'openrouter/free',
+                      model: 'nvidia/nemotron-3-super-120b-a12b:free',
                       models: [
-                        'openrouter/free',
-                        'meta-llama/llama-3.3-70b-instruct:free',
-                        'meta-llama/llama-3.1-8b-instruct:free',
+                        'nvidia/nemotron-3-super-120b-a12b:free',
+                        'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+                        'cohere/north-mini-code:free',
                       ],
                       messages: openRouterMessages,
                       temperature: 0.7,
-                      max_tokens: 2048,
+                      max_tokens: 1024,
                     }),
                   });
 
@@ -123,8 +123,9 @@ export default defineConfig(({ mode }) => {
                   }
 
                   const data = (await openrouterRes.json()) as any;
-                  const text = data.choices?.[0]?.message?.content;
-                  const modelUsed = data.model || 'OpenRouter Free';
+                  const choice = data.choices?.[0]?.message;
+                  const text = choice?.content || choice?.reasoning;
+                  const modelUsed = data.model || 'Nvidia Nemotron 120B (Free)';
 
                   res.statusCode = 200;
                   res.setHeader('Content-Type', 'application/json');

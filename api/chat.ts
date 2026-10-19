@@ -89,15 +89,15 @@ export async function POST(req: Request) {
           'X-Title': 'Minimal PDF Reader AI Tutor',
         },
         body: JSON.stringify({
-          model: 'openrouter/free',
+          model: 'nvidia/nemotron-3-super-120b-a12b:free',
           models: [
-            'openrouter/free',
-            'meta-llama/llama-3.3-70b-instruct:free',
-            'meta-llama/llama-3.1-8b-instruct:free',
+            'nvidia/nemotron-3-super-120b-a12b:free',
+            'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+            'cohere/north-mini-code:free',
           ],
           messages: openRouterMessages,
           temperature: 0.7,
-          max_tokens: 2048,
+          max_tokens: 1024,
         }),
       });
 
@@ -114,11 +114,12 @@ export async function POST(req: Request) {
       }
 
       const data = await openrouterRes.json();
-      const text = data.choices?.[0]?.message?.content;
+      const choice = data.choices?.[0]?.message;
+      const text = choice?.content || choice?.reasoning;
       return new Response(
         JSON.stringify({
           text: text || 'No response generated.',
-          model: data.model || 'OpenRouter Free',
+          model: data.model || 'Nvidia Nemotron 120B (Free)',
           groundingSources: [],
         }),
         { status: 200, headers: { 'Content-Type': 'application/json' } }
@@ -304,15 +305,15 @@ export default async function handler(req: any, res: any) {
           'X-Title': 'Minimal PDF Reader AI Tutor',
         },
         body: JSON.stringify({
-          model: 'openrouter/free',
+          model: 'nvidia/nemotron-3-super-120b-a12b:free',
           models: [
-            'openrouter/free',
-            'meta-llama/llama-3.3-70b-instruct:free',
-            'meta-llama/llama-3.1-8b-instruct:free',
+            'nvidia/nemotron-3-super-120b-a12b:free',
+            'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+            'cohere/north-mini-code:free',
           ],
           messages: openRouterMessages,
           temperature: 0.7,
-          max_tokens: 2048,
+          max_tokens: 1024,
         }),
       });
 
@@ -324,9 +325,11 @@ export default async function handler(req: any, res: any) {
       }
 
       const data = await openrouterRes.json();
+      const choice = data.choices?.[0]?.message;
+      const text = choice?.content || choice?.reasoning;
       return res.status(200).json({
-        text: data.choices?.[0]?.message?.content || 'No response generated.',
-        model: data.model || 'OpenRouter Free',
+        text: text || 'No response generated.',
+        model: data.model || 'Nvidia Nemotron 120B (Free)',
         groundingSources: [],
       });
     }

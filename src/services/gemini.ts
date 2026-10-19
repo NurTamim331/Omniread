@@ -36,6 +36,16 @@ export async function sendGeminiMessage(
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
+    if (response.status === 504) {
+      throw new Error(
+        'The free AI model took longer than Netlify\'s 10-second limit. Tip: Toggle "Doc Context: OFF" in the top bar for 3x faster responses, or retry in a moment.'
+      );
+    }
+    if (response.status === 502) {
+      throw new Error(
+        'Server gateway error (502). Please verify your OPENROUTER_API_KEY is configured in your Netlify site settings (and trigger a redeploy), or retry shortly.'
+      );
+    }
     throw new Error(
       errorData?.error || `Chat request failed with status ${response.status}.`
     );
